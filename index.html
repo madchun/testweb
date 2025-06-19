@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的個人網站</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <img src="assets/profile.jpg" alt="個人照片" class="avatar">
+        <h1>你好，我是 Your Name</h1>
+        <nav>
+            <a href="index.html">首頁</a>
+            <a href="about.html">關於我</a>
+            <a href="contact.html">聯絡我</a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>歡迎來到我的網站！</h2>
+            <p>這裡是我的個人網站，展示我的作品與經歷。</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Your Name. 版權所有。</p>
+    </footer>
+    
+    <script src="https://sf-cdn.coze.com/obj/unpkg-va/flow-platform/chat-app-sdk/1.2.0-beta.6/libs/oversea/index.js"></script>
+    <script>
+      new CozeWebSDK.WebChatClient({
+        config: {
+          bot_id: '7445107399088308231',
+        },
+        componentProps: {
+          title: 'Coze',
+        },
+        auth: {
+          type: 'token',
+          token: 'pat_********',
+          onRefreshToken: function () {
+            return 'pat_********'
+          }
+        }
+      });
+    </script>
+</body>
+</html>
