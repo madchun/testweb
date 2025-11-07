@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Student Pilot Photo Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 0;
+        }
+
+        .preview-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .qr-code {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .qr-code canvas {
+            display: block;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ Pilot Photo Generator</h1>
+        <p class="subtitle">Upload a student photo to create an AI-generated pilot portrait</p>
+
+        <div id="uploadSection">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <h3>Tap to Upload Photo</h3>
+                <p>or drag and drop here</p>
+            </div>
+
+            <input type="file" id="fileInput" accept="image/*" capture="environment">
+
+            <button class="btn camera-btn" id="cameraBtn">
+                📷 Take Photo with Camera
+            </button>
+
+            <div class="preview-container" id="previewContainer" style="display: none;">
+                <img id="previewImage" class="preview-image" alt="Preview">
+            </div>
+
+            <button class="btn" id="generateBtn" style="display: none;" disabled>
+                🚀 Generate Pilot Photo
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #667eea; font-weight: bold;">Generating your pilot photo...</p>
+            <p style="margin-top: 5px; color: #999; font-size: 14px;">This may take 30-60 seconds</p>
+        </div>
+
+        <div id="statusMessage"></div>
+
+        <div class="result-container" id="resultContainer">
+            <h2 style="color: #333; margin-bottom: 20px;">🎉 Your Pilot Photo is Ready!</h2>
+            <img id="resultImage" class="result-image" alt="Generated Pilot Photo">
+
+            <div class="qr-code" id="qrCode"></div>
+            <p style="color: #666; margin-top: 10px;">Scan QR code to download</p>
+
+            <a id="downloadLink" class="download-link" download="pilot-photo.jpg">
+                ⬇️ Direct Download Link
+            </a>
+
+            <button class="btn reset-btn" id="resetBtn">
+                🔄 Generate Another Photo
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const statusMessage = document.getElementById('statusMessage');
+        const uploadSection = document.getElementById('uploadSection');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultImage = document.getElementById('resultImage');
+        const qrCodeDiv = document.getElementById('qrCode');
+        const downloadLink = document.getElementById('downloadLink');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let selectedFile = null;
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Camera button
+        cameraBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file selection
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showStatus('Please select an image file', 'error');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                generateBtn.style.display = 'block';
+                generateBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Generate button
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            // Hide upload section and show loading
+            uploadSection.style.display = 'none';
+            loading.style.display = 'block';
+            statusMessage.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            try {
+                const response = await fetch('/api/generate-pilot', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Hide loading
+                    loading.style.display = 'none';
+
+                    // Show result
+                    resultImage.src = data.imageUrl;
+                    downloadLink.href = data.driveUrl;
+
+                    // Generate QR code
+                    qrCodeDiv.innerHTML = '';
+                    QRCode.toCanvas(data.driveUrl, {
+                        width: 200,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    }, (error, canvas) => {
+                        if (!error) {
+                            qrCodeDiv.appendChild(canvas);
+                        }
+                    });
+
+                    resultContainer.style.display = 'block';
+                    showStatus('Successfully generated pilot photo!', 'success');
+                } else {
+                    throw new Error(data.error || 'Failed to generate photo');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                uploadSection.style.display = 'block';
+                showStatus('Error: ' + error.message, 'error');
+            }
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            previewContainer.style.display = 'none';
+            generateBtn.style.display = 'none';
+            resultContainer.style.display = 'none';
+            uploadSection.style.display = 'block';
+            statusMessage.innerHTML = '';
+        });
+
+        // Show status message
+        function showStatus(message, type) {
+            statusMessage.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusMessage.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
